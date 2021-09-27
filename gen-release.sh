@@ -1,8 +1,8 @@
 #!/bin/bash
-ICODETOKEN=Fy1vexUnAfPxefNaw2Mu
-KKBRELEASE=184
-GITSERVER=http://icode.kaikeba.com
-RELEASE_REPO=git@192.168.100.101:kkb-release
+ICODETOKEN=bsr1XyrrRpAXgUUBydqA
+KKBRELEASE=6
+GITSERVER=http://172.27.58.44
+RELEASE_REPO=git@172.27.58.44:kkb-release
 PGRDIR=$(cd `dirname $0`; pwd)
 # params from cli
 repo=""

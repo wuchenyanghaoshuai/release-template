@@ -1,0 +1,69 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: general-template
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: general-template
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9180"
+        prometheus.io/path: /metrics
+    spec:
+      nodeSelector:
+        environment_kkb-xk-prod: kkb-xk-prod
+      containers:
+      - name: general-template
+        image: registry.cn-beijing.aliyuncs.com/kkb-xiaoke/general-template:{{VERSION}}
+        imagePullPolicy: Always
+        ports:
+          - name: web
+            containerPort: 8080
+          - name: actuator
+            containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "1024Mi"
+          limits:
+            memory: "2048Mi"
+        env:
+        - name: "SPRING_PROFILES_ACTIVE"
+          value: "prod"
+        - name: "JAVA_OPTS"
+          value: "-Xms1024m -Xmx1024m -javaagent:/data/agent/skywalking-agent.jar -javaagent:/data/agent/jmx_prometheus_javaagent-0.14.0.jar=9180:/data/agent/jmx_exporter.yml"
+        - name: kaikeba_logs_logs-general-template
+          value: "stdout"
+        - name: kaikeba_logs_logs-general-template_ttl
+          value: "3"
+        - name: SW_AGENT_NAME
+          value: general-template
+        - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+          value: "192.168.2.51:11800" 
+        securityContext:
+          privileged: true
+#        volumeMounts:
+#        - name: logs
+#          mountPath: /opt/logs
+#        - name: behavior-logs
+#          mountPath: /opt/behaviorLogs
+#        - name: sidecar
+#          mountPath: /sidecar
+#      volumes:
+#        - name: logs
+#          hostPath:
+#            path: "/opt/logs/kkb/smallcourse/prod"
+#        - name: behavior-logs
+#          nfs:
+#            path: /xiaoke/xiaoke-prod/logs
+#            server: 1ab7749c64-xrj82.cn-beijing.nas.aliyuncs.com

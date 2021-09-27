@@ -1,0 +1,52 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mvn-new-template
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge:
+      maxUnavailable: 0
+  minReadySeconds: 5
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      labels:
+        app: mvn-new-template
+    spec:
+      containers:
+      - name: mvn-new-template
+        image: 192.168.100.36:1179/xiaoke/mvn-new-template:{{build_image_tag}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "1500Mi"
+        env:
+        - name: PROFILE
+          value: dev
+        - name: APP_ENV
+          value: dev
+        - name: APP_ID
+          value: mvn-new-template
+        - name: APP_ID
+          value: mvn-new-template            
+        - name: JAVA_OPTS
+          value: "-Xms256m -Xmx1200m"
+        - name: SERVICE_DISCOVERY_ADDR
+          value: kkb-corgi-nacos-console.kkb-base-dev.svc.cluster.local:80        
+        - name: SERVICE_DISCOVERY_NAMESPACE
+          value: 

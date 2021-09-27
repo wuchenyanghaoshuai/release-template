@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mvn-old-template
+  namespace: mos-prod
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mvn-old-template
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9180"
+        prometheus.io/path: /metrics
+    spec:
+      containers:
+      - name: mvn-old-template
+        image: registry.cn-beijing.aliyuncs.com/kaikeba/mvn-old-template:{{build_image_tag}}
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "1300Mi"          
+          limits:
+            memory: "1300Mi"
+        env:
+        - name: PROFILE
+          value: mos-prod
+        - name: APP_ENV
+          value: mos-prod
+        - name: APP_ID
+          value: mvn-old-template
+        - name: SW_AGENT_NAME
+          value: mvn-old-template 
+        - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+          value: "192.168.2.51:11800"
+        - name: kaikeba_logs_logs-mvn-old-template
+          value: "stdout"
+        - name: kaikeba_logs_logs-mvn-old-template_ttl
+          value: "3"
+        - name: JAVA_OPTS
+          value: "-Xms1g -Xmx1g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/opt/config_java_heapdump.hprof -XX:-UseLargePages -Xloggc:/var/opt/config_gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCApplicationStoppedTime -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M -javaagent:/data/agent/skywalking-agent.jar -javaagent:/data/agent/jmx_prometheus_javaagent-0.14.0.jar=9180:/data/agent/jmx_exporter.yml"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: logs
+          mountPath: /opt/logs
+        securityContext:
+          privileged: true
+      volumes:
+        - name: logs
+          nfs:
+            server: 1ab7749c64-xrj82.cn-beijing.nas.aliyuncs.com
+            path: /logs/prod
+      nodeSelector:
+        mos-prod: mos-prod

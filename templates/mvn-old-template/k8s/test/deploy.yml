@@ -1,0 +1,67 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mvn-old-template
+  namespace: kkb-test
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mvn-old-template
+    spec:
+      nodeSelector:
+        kkb-test: kkb-test
+      initContainers:
+        - name: sidecar
+          image: 192.168.100.36:1179/kaikeba/skywalking-agent-sidecar:6.6.0 # 容器镜像，包含静态资源文件
+          imagePullPolicy: IfNotPresent
+          command: ["cp", "-r", "/usr/skywalking/agent", "/sidecar"]
+          volumeMounts:
+            - name: sidecar
+              mountPath: /sidecar
+      containers:
+      - name: mvn-old-template
+        image: 192.168.100.36:1179/xiaoke/mvn-old-template:{{build_image_tag}}
+        ports:
+        - containerPort: 7025
+        readinessProbe:
+          httpGet:
+            path: /actuator/info
+            port: 8080
+          initialDelaySeconds: 200
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "1500Mi"          
+          limits:
+            memory: "1500Mi"
+        env:
+        - name: PROFILE
+          value: test
+        - name: APP_ENV
+          value: test
+        - name: APP_ID
+          value: mvn-old-template
+        - name: JAVA_OPTS
+          value: "-javaagent:/sidecar/agent/skywalking-agent.jar -Xms1200m -Xmx1200m"
+        - name: SW_AGENT_NAME
+          value: mvn-old-template
+        - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+          value: skywalking-skywalking-oap.kkkb-base:11800
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: logs
+          mountPath: /opt/logs
+        - name: sidecar
+          mountPath: /sidecar
+      volumes:
+        - name: logs
+          nfs:
+            server: 192.168.100.101
+            path: /data/nfs/kaikeba/logs
+        - name: sidecar
+          emptyDir: {}

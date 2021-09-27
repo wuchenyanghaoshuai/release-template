@@ -1,0 +1,36 @@
+# Latest frolvlad/alpine-oraclejdk8:slim
+FROM 192.168.100.36:1179/xiaoke/alpine-oraclejdk8:slim
+
+# Update apk mirror
+RUN cp /etc/apk/repositories /etc/apk/repositories.bak
+#RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+#RUN sed -i 's/dl-cdn/dl-5/' /etc/apk/repositories
+
+# Install toolsl
+RUN apk update && apk add curl bash libstdc++ && rm -rf /var/cache/apk/*
+
+# Set localtime
+COPY ./release/localtime /etc/localtime
+RUN echo 'Asia/Shanghai' >/etc/timezone
+
+# Set tmp
+VOLUME /tmp
+
+
+# Project path
+ENV PROJECT_PATH=/workspace
+
+# Workdir
+WORKDIR $PROJECT_PATH
+
+# Copy project to docker
+COPY . $PROJECT_PATH
+
+# Build faster
+RUN mkdir ~/.gradle
+RUN touch ~/.gradle/gradle.properties && echo "org.gradle.daemon=true" >> ~/.gradle/gradle.properties
+
+# Compile
+RUN ./gradlew clean build && rm -rf $PROJECT_PATH/*
+

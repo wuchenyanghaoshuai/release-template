@@ -1,0 +1,56 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: general-template
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: general-template
+      annotations:
+        prometheus_io_scrape: "true"
+        prometheus_io_path: "/manage/prometheus"
+        prometheus_io_port: "8081"
+    spec:
+      containers:
+      - name: general-template
+        image: registry.cn-beijing.aliyuncs.com/kkb-xiaoke/general-template:{{VERSION}}
+        imagePullPolicy: Always
+        ports:
+          - name: web
+            containerPort: 8080
+          - name: actuator
+            containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "1024Mi"
+        env:
+        - name: "SPRING_PROFILES_ACTIVE"
+          value: "pre"
+        - name: "JAVA_OPTS"
+          value: "-Xms1024m -Xmx1024m"
+        securityContext:
+          privileged: true
+#        volumeMounts:
+#        - name: logs
+#          mountPath: /opt/logs
+#        - name: behavior-logs
+#          mountPath: /opt/behaviorLogs
+#      volumes:
+#        - name: logs
+#          hostPath:
+#            path: "/opt/logs/kkb/smallcourse/pre"
+#        - name: behavior-logs
+#          hostPath:
+#            path: "/opt/logs/kkb/smallcourse/pre"

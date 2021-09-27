@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nodejs-template
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nodejs-template
+    spec:
+      containers:
+      - name: nodejs-template
+        image: registry.cn-beijing.aliyuncs.com/kaikeba/nodejs-template:{{VERSION}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6020
+        readinessProbe:
+          httpGet:
+            path: /check
+            port: 6020
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        env:
+        - name: NODE_ENV
+          value: pre
+        - name: APP_ENV
+          value: pre
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"

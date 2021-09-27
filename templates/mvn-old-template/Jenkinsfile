@@ -1,0 +1,14 @@
+library('delivery')
+library('kkb-k8s-mos-deploy-plugin')
+
+delivery {
+    apply plugin: "flow"
+    apply plugin: "kkb_k8s_mos_deploy"
+    
+    config {
+        name = "mvn-old-template"
+        version = "1.0.0-${env.COMMIT_ID}"
+        subdir = "{{subdir}}"
+        k8s_namespaces = ["dev": "kkb-dev","test":"kkb-test"]
+    }
+}

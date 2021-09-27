@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mvn-old-template
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mvn-old-template
+    spec:
+      containers:
+      - name: mvn-old-template
+        image: registry.cn-beijing.aliyuncs.com/kaikeba/mvn-old-template:{{build_image_tag}}
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            memory: "1300Mi"          
+          limits:
+            memory: "1300Mi"
+        env:
+        - name: PROFILE
+          value: pre
+        - name: APP_ENV
+          value: pre
+        - name: APP_ID
+          value: mvn-old-template
+        - name: JAVA_OPTS
+          value: "-Xms1g -Xmx1g -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=320m -XX:-OmitStackTraceInFastThrow -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/opt/config_java_heapdump.hprof -XX:-UseLargePages -Xloggc:/var/opt/config_gc.log -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintGCApplicationStoppedTime -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=10 -XX:GCLogFileSize=100M"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: logs
+          mountPath: /opt/logs
+        securityContext:
+          privileged: true
+      volumes:
+        - name: logs
+          nfs:
+            server: 192.168.2.20
+            path: /data/nfs/kaikeba/logs/pre_log

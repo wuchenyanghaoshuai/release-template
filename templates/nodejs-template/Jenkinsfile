@@ -1,0 +1,16 @@
+library('delivery')
+library('kkb-front-flow-plugin')
+
+delivery {
+    apply plugin: "flow"
+    apply plugin: "kkb_k8s_front_deploy"
+
+    config {
+        category = "{{category}}"
+        name = "nodejs-template"
+        release_repo="{{release_repo}}"
+        version = "1.0.0-${env.COMMIT_ID}"
+        k8s_namespaces = ["dev": "kkb-dev","test":"kkb-test"]
+    }
+}
+

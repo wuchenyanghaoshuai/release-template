@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mvn-new-template
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: mvn-new-template
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9180"
+        prometheus.io/path: /metrics
+    spec:
+      containers:
+        - name: mvn-new-template
+          image: registry.cn-beijing.aliyuncs.com/kaikeba/mvn-new-template:{{build_image_tag}}
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /manage/health
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          resources:
+            requests:
+              memory: "2048Mi"
+            limits:
+              memory: "3000Mi"
+          env:
+          - name: "JAVA_OPTS"
+            value: "-Xms2g -Xmx2g -javaagent:/data/agent/skywalking-agent.jar -javaagent:/data/agent/jmx_prometheus_javaagent-0.14.0.jar=9180:/data/agent/jmx_exporter.yml"
+          - name : PROFILE
+            value: prod
+          - name: APP_ID
+            value: mvn-new-template       
+          - name: SW_AGENT_NAME
+            value: mvn-new-template
+          - name: SW_AGENT_COLLECTOR_BACKEND_SERVICES
+            value: "192.168.2.51:11800" 
+          - name: kaikeba_logs_logs-mvn-new-template
+            value: "stdout"
+          - name: kaikeba_logs_logs-mvn-new-template_ttl
+            value: "3"
+          - name: SERVICE_DISCOVERY_ADDR
+            value: nacos-headless.kkb-base-prod.svc.cluster.local:8848            
+          - name: SERVICE_DISCOVERY_NAMESPACE
+            value:                     

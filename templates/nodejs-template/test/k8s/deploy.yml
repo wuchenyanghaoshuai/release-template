@@ -1,0 +1,43 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nodejs-template
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge:
+      maxUnavailable: 0
+  minReadySeconds: 5
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      labels:
+        app: nodejs-template
+    spec:
+      enableServiceLinks: false 
+      containers:
+      - name: nodejs-template
+        image: 192.168.100.36:1179/xiaoke/nodejs-template:{{VERSION}}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6020
+        readinessProbe:
+          httpGet:
+            path: /check
+            port: 6020
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        env:
+        - name: NODE_ENV
+          value: test
+        - name: APP_ENV
+          value: test
+        resources:
+          requests:
+            memory: "256Mi"
+          limits:
+            memory: "512Mi"

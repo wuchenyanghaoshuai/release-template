@@ -1,0 +1,50 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: general-template
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: general-template
+    spec:
+      containers:
+      - name: general-template
+        image: 192.168.100.36:1179/xiaoke/general-template:{{VERSION}}
+        imagePullPolicy: Always
+        ports:
+          - name: web
+            containerPort: 8080
+          - name: actuator
+            containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /manage/health
+            port: 8081
+          initialDelaySeconds: 20
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+          limits:
+            cpu: "2000m"
+            memory: "1500Mi"
+        env:
+        - name: "SPRING_PROFILES_ACTIVE"
+          value: "test"
+        - name: "JAVA_OPTS"
+          value: "-Xms1200m -Xmx1200m"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: logs
+          mountPath: /opt/logs
+      volumes:
+        - name: logs
+          nfs:
+            server: 192.168.100.101
+            path: /data/nfs/kaikeba/logs

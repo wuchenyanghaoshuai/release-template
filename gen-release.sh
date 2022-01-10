@@ -1,8 +1,8 @@
 #!/bin/bash
-ICODETOKEN=bsr1XyrrRpAXgUUBydqA
+ICODETOKEN=CX4Hvj-rMyQTBNFDBRAe
 KKBRELEASE=6
-GITSERVER=http://172.27.58.44
-RELEASE_REPO=git@172.27.58.44:kkb-release
+GITSERVER=http://192.168.1.17
+RELEASE_REPO=git@192.168.1.17:kkb-release
 PGRDIR=$(cd `dirname $0`; pwd)
 # params from cli
 repo=""
@@ -117,14 +117,14 @@ checkParams() {
 }
 
 getSubGroup() {
-  subGroup=`echo ${repo//http:\/\/icode.kaikeba.com\//}`
-  subGroup=`echo ${subGroup//git@192.168.100.101:/}`
+  subGroup=`echo ${repo//http:\/\/192.168.1.17\//}`
+  subGroup=`echo ${subGroup//git@192.168.1.17:/}`
   subGroup=${subGroup%%/*}
 }
 
 getProjectName() {
-  projectName=`echo ${repo//http:\/\/icode.kaikeba.com\//}`
-  projectName=`echo ${projectName//git@192.168.100.101:/}`
+  projectName=`echo ${repo//http:\/\/192.168.1.17\//}`
+  projectName=`echo ${projectName//git@192.168.1.17:/}`
   projectName=${projectName##*/}
   projectName=`echo ${projectName//.git/}`
 }

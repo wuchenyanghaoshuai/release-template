@@ -1,8 +1,37 @@
-# 本文介绍如何使用release-template下的脚本生成k8s的deployment跟svc
+gen-release.sh is a simple&stupid release generator.
+
+***!!!IMPORTENT!!!***
+
+GNU sed and jq needed! if use macOS,execute commands list below:
+```shell
+brew install coreutils
+brew install gnu-sed --with-default-names
+brew install jq
 ```
-1. 将该git克隆到本地
-2. 修改step2下的gen-release.sh
-3. 需要修改以下几点
-   3.1 ICODETOKEN=CX4Hvj-rMyQTBNFDBRAe(gitlab点击右上角头像,然后点击左侧accesstokn创建即可记得复制出来生成的码)
-   3.2 KKBRELEASE=6(在gitlab上创建一个名字为kkb-release的group并且记录id)
+***USAGE:***
+```shell
+gen-release.sh -r sourceProjectRepo -p port -n nodePort -t template [-s subDir] -u upload
 ```
+***SUPPORTED TEMPLATES:***
+
+general-template  (kuick mos2 market kkb-cms )
+
+mvn-new-template  (corgi)
+
+mvn-old-template  (kkb-cloud)
+
+nodejs-template   (kkb-plat-open)
+
+web-template      (kkb-plat-cms)
+
+***EXAMPLE:***
+```shell
+gen-release.sh -r git@192.168.100.11:corgi/kkb-corgi-upms-push-service.git -p 8080 -n 20789 -t mvn-new-template -s kkb-corgi-upms-push-service-sdk -u upload
+
+gen-release.sh -r git@192.168.100.11:corgi/kkb-corgi-upms-push-service.git -p 8080 -n 20789 -t mvn-new-template -u upload
+```
+***DEBUG:***
+```shell
+sh -x gen-release.sh -r git@192.168.100.11:corgi/kkb-corgi-upms-push-service.git -p 8080 -n 20789 -t mvn-new-template -u upload
+```
+
